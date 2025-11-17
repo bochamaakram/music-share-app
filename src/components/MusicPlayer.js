@@ -1,8 +1,7 @@
 // src/components/MusicPlayer.js
-import React, { useState, useEffect, useRef } from "react";
+import React, { useRef, useEffect } from "react";
 
 const MusicPlayer = ({ currentTrack }) => {
-  const [audioElement, setAudioElement] = useState(null);
   const audioRef = useRef(null);
 
   // Reset audio when track changes
@@ -18,11 +17,13 @@ const MusicPlayer = ({ currentTrack }) => {
     }
   }, [currentTrack]);
 
-  // Clean up
+  // Clean up - store ref in variable to avoid dependency issues
   useEffect(() => {
+    const audioElement = audioRef.current;
+
     return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
+      if (audioElement) {
+        audioElement.pause();
       }
     };
   }, []);
@@ -73,7 +74,7 @@ const MusicPlayer = ({ currentTrack }) => {
       <div className="audio-controls">
         <audio
           ref={audioRef}
-          key={currentTrack.id} // Force re-render when track changes
+          key={currentTrack.id}
           controls
           autoPlay={false}
           preload="metadata"
@@ -91,7 +92,6 @@ const MusicPlayer = ({ currentTrack }) => {
           <source src={currentTrack.url} type="audio/wav" />
           <source src={currentTrack.url} type="audio/ogg" />
           Your browser does not support the audio element.
-          <p>Debug info: {currentTrack.url.substring(0, 50)}...</p>
         </audio>
 
         <div className="audio-help">

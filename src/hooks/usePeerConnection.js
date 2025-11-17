@@ -1,5 +1,5 @@
 // src/hooks/usePeerConnection.js
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 
 let Peer;
 if (typeof window !== "undefined") {
@@ -20,15 +20,101 @@ export const usePeerConnection = ({
   const peerRef = useRef();
   const connectionRef = useRef();
 
-  const updateConnectionStatus = (status, remotePeerId = "") => {
-    console.log("Connection status update:", status, remotePeerId);
-    setConnectionStatus(status);
-    setIsConnected(status === "connected");
-    setRemoteId(remotePeerId);
-    if (onConnectionStatusChange) {
-      onConnectionStatusChange(status, remotePeerId);
-    }
-  };
+  const updateConnectionStatus = useCallback(
+    (status, remotePeerId = "") => {
+      console.log("Connection status update:", status, remotePeerId);
+      setConnectionStatus(status);
+      setIsConnected(status === "connected");
+      setRemoteId(remotePeerId);
+      if (onConnectionStatusChange) {
+        onConnectionStatusChange(status, remotePeerId);
+      }
+    },
+    [onConnectionStatusChange]
+  );
+
+  const handleIncomingConnection = useCallback(
+    (conn) => {
+      console.log("🤝 Handling incoming connection from:", conn.peer);
+
+      conn.on("open", () => {
+        console.log("✅ Incoming connection opened with:", conn.peer);
+        connectionRef.current = conn;
+        setConnection(conn);
+        updateConnectionStatus("connected", conn.peer);
+        setupConnectionHandlers(conn);
+      });
+
+      conn.on("error", (err) => {
+        console.error("❌ Incoming connection error:", err);
+        updateConnectionStatus("error");
+      });
+    },
+    [updateConnectionStatus]
+  );
+
+  const setupConnectionHandlers = useCallback(
+    (conn) => {
+      conn.on("data", (data) => {
+        console.log("📦 Received data type:", data.type);
+        console.log("📦 Full data received:", data);
+
+        if (data.type === "file" && onFileReceived) {
+          try {
+            console.log("📁 Processing file:", data.fileName);
+
+            // Handle the file content properly
+            let fileBlob;
+            if (data.content instanceof ArrayBuffer) {
+              fileBlob = new Blob([new Uint8Array(data.content)], {
+                type: data.fileType,
+              });
+            } else if (Array.isArray(data.content)) {
+              fileBlob = new Blob([new Uint8Array(data.content)], {
+                type: data.fileType,
+              });
+            } else if (data.content) {
+              fileBlob = new Blob([data.content], { type: data.fileType });
+            } else {
+              console.error("❌ No content in file data");
+              return;
+            }
+
+            const url = URL.createObjectURL(fileBlob);
+
+            const fileObject = {
+              id: Math.random().toString(36).substr(2, 9),
+              name: data.fileName,
+              size: data.fileSize,
+              type: data.fileType,
+              blob: fileBlob,
+              url: url,
+              isLocal: false,
+              lastModified: Date.now(),
+            };
+
+            console.log("✅ File processed successfully:", fileObject.name);
+            onFileReceived(fileObject);
+          } catch (error) {
+            console.error("❌ Error processing received file:", error);
+          }
+        }
+      });
+
+      conn.on("close", () => {
+        console.log("🔌 Connection closed by peer");
+        connectionRef.current = null;
+        setConnection(null);
+        updateConnectionStatus("disconnected");
+      });
+
+      conn.on("error", (err) => {
+        console.error("❌ Connection error:", err);
+        updateConnectionStatus("error");
+      });
+    },
+    [onFileReceived, updateConnectionStatus]
+  );
 
   useEffect(() => {
     if (!Peer) {
@@ -94,93 +180,7 @@ export const usePeerConnection = ({
         newPeer.destroy();
       }
     };
-  }, [staticId]);
-
-  const handleIncomingConnection = (conn) => {
-    console.log("🤝 Handling incoming connection from:", conn.peer);
-
-    conn.on("open", () => {
-      console.log("✅ Incoming connection opened with:", conn.peer);
-      connectionRef.current = conn;
-      setConnection(conn);
-      updateConnectionStatus("connected", conn.peer);
-      setupConnectionHandlers(conn);
-    });
-
-    conn.on("error", (err) => {
-      console.error("❌ Incoming connection error:", err);
-      updateConnectionStatus("error");
-    });
-  };
-
-  const setupConnectionHandlers = (conn) => {
-    conn.on("data", (data) => {
-      console.log("📦 Received data type:", data.type);
-      console.log("📦 Full data received:", data);
-
-      if (data.type === "file" && onFileReceived) {
-        try {
-          console.log("📁 Processing file:", data.fileName);
-          console.log("📁 File size:", data.fileSize);
-          console.log("📁 File type:", data.fileType);
-          console.log(
-            "📁 Content type:",
-            typeof data.content,
-            Array.isArray(data.content)
-          );
-
-          // Handle the file content properly
-          let fileBlob;
-          if (data.content instanceof ArrayBuffer) {
-            fileBlob = new Blob([new Uint8Array(data.content)], {
-              type: data.fileType,
-            });
-          } else if (Array.isArray(data.content)) {
-            fileBlob = new Blob([new Uint8Array(data.content)], {
-              type: data.fileType,
-            });
-          } else if (data.content) {
-            // If it's already a typed array or other format
-            fileBlob = new Blob([data.content], { type: data.fileType });
-          } else {
-            console.error("❌ No content in file data");
-            return;
-          }
-
-          const url = URL.createObjectURL(fileBlob);
-
-          const fileObject = {
-            id: Math.random().toString(36).substr(2, 9),
-            name: data.fileName,
-            size: data.fileSize,
-            type: data.fileType,
-            blob: fileBlob,
-            url: url,
-            isLocal: false,
-            lastModified: Date.now(),
-          };
-
-          console.log("✅ File processed successfully:", fileObject.name);
-          console.log("✅ File URL created:", url);
-          onFileReceived(fileObject);
-        } catch (error) {
-          console.error("❌ Error processing received file:", error);
-        }
-      }
-    });
-
-    conn.on("close", () => {
-      console.log("🔌 Connection closed by peer");
-      connectionRef.current = null;
-      setConnection(null);
-      updateConnectionStatus("disconnected");
-    });
-
-    conn.on("error", (err) => {
-      console.error("❌ Connection error:", err);
-      updateConnectionStatus("error");
-    });
-  };
+  }, [staticId, updateConnectionStatus, handleIncomingConnection]);
 
   const connectToPeer = (peerId) => {
     if (!peerRef.current) {
@@ -246,17 +246,13 @@ export const usePeerConnection = ({
       reader.onload = (e) => {
         try {
           console.log("📤 Sending file:", file.name);
-          console.log("📤 File size:", file.size);
-          console.log("📤 File type:", file.type);
-          console.log("📤 Content type:", typeof e.target.result);
 
-          // Send file data with proper structure
           const fileData = {
             type: "file",
             fileName: file.name,
             fileSize: file.size,
             fileType: file.type,
-            content: e.target.result, // ArrayBuffer
+            content: e.target.result,
           };
 
           connectionRef.current.send(fileData);
@@ -273,7 +269,6 @@ export const usePeerConnection = ({
         resolve(false);
       };
 
-      // Read as ArrayBuffer for binary transfer
       reader.readAsArrayBuffer(file);
     });
   };

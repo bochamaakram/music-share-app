@@ -20,7 +20,6 @@ function App() {
     isConnected,
     localId,
     remoteId,
-    connectionStatus: peerConnectionStatus,
     connectToPeer,
     disconnect,
     sendFile,
@@ -251,7 +250,7 @@ function App() {
   );
 }
 
-// Nickname Selection Component (keep the same as before)
+// Nickname Selection Component
 const NicknameSelection = ({ onSubmit }) => {
   const [nickname, setNickname] = useState("");
   const [error, setError] = useState("");
