@@ -1,0 +1,191 @@
+/* src/App.css */
+.app {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+}
+
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #eee;
+}
+
+.app-content {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.user-panels {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.user-panel {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  background: #f9f9f9;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.panel-header h2 {
+  margin: 0;
+  color: #333;
+}
+
+.upload-btn,
+.share-btn,
+.connect-btn,
+.disconnect-btn,
+.play-pause-btn {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.upload-btn:hover,
+.share-btn:hover,
+.connect-btn:hover,
+.play-pause-btn:hover {
+  background: #0056b3;
+}
+
+.disconnect-btn {
+  background: #dc3545;
+}
+
+.disconnect-btn:hover {
+  background: #c82333;
+}
+
+.file-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.file-item {
+  display: flex;
+  justify-content: between;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  background: white;
+}
+
+.file-info {
+  flex: 1;
+  cursor: pointer;
+}
+
+.file-info:hover {
+  background: #f0f0f0;
+}
+
+.file-name {
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+.file-size {
+  font-size: 12px;
+  color: #666;
+}
+
+.music-player {
+  border: 2px solid #007bff;
+  border-radius: 8px;
+  padding: 20px;
+  background: white;
+}
+
+.music-player.empty {
+  text-align: center;
+  color: #666;
+}
+
+.player-info {
+  margin-bottom: 15px;
+}
+
+.track-name {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.track-source {
+  font-size: 14px;
+  color: #666;
+  font-style: italic;
+}
+
+.connection-status {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.status-info {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.status-indicator {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: bold;
+  font-size: 12px;
+}
+
+.status-indicator.connected {
+  background: #d4edda;
+  color: #155724;
+}
+
+.status-indicator.disconnected {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.connect-form {
+  display: flex;
+  gap: 10px;
+}
+
+.peer-id-input {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  flex: 1;
+}
+
+.connected-info {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.empty-state {
+  text-align: center;
+  color: #666;
+  padding: 40px 20px;
+}
