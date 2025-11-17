@@ -5,53 +5,79 @@ const ConnectionStatus = ({
   isConnected,
   localId,
   remoteId,
+  connectionStatus,
   onConnect,
   onDisconnect,
+  userNickname,
+  remoteNickname,
 }) => {
-  const [peerIdInput, setPeerIdInput] = useState("");
+  const [peerNickname, setPeerNickname] = useState("");
 
   const handleConnect = () => {
-    if (peerIdInput.trim()) {
-      onConnect(peerIdInput.trim());
-      setPeerIdInput("");
+    if (peerNickname.trim()) {
+      onConnect(peerNickname.trim());
+      setPeerNickname("");
+    }
+  };
+
+  const getStatusMessage = () => {
+    switch (connectionStatus) {
+      case "connected":
+        return `✅ Connected to ${remoteNickname || remoteId}`;
+      case "connecting":
+        return "🔄 Connecting...";
+      case "error":
+        return "❌ Connection failed";
+      case "ready":
+        return "✅ Ready to connect";
+      default:
+        return "❌ Disconnected";
     }
   };
 
   return (
     <div className="connection-status">
       <div className="status-info">
-        <span
-          className={`status-indicator ${
-            isConnected ? "connected" : "disconnected"
-          }`}
-        >
-          {isConnected ? "Connected" : "Disconnected"}
+        <span className={`status-indicator ${connectionStatus}`}>
+          {getStatusMessage()}
         </span>
-
-        {localId && <span className="local-id">Your ID: {localId}</span>}
       </div>
 
       <div className="connection-controls">
         {!isConnected ? (
-          <div className="connect-form">
-            <input
-              type="text"
-              placeholder="Enter friend's ID"
-              value={peerIdInput}
-              onChange={(e) => setPeerIdInput(e.target.value)}
-              className="peer-id-input"
-            />
-            <button
-              onClick={handleConnect}
-              disabled={!peerIdInput.trim()}
-              className="connect-btn"
-            >
-              Connect
-            </button>
+          <div className="connect-section">
+            <div className="connect-instruction">
+              <p>
+                Share your nickname: <strong>{userNickname}</strong>
+              </p>
+              <p>Enter your friend's nickname to connect:</p>
+            </div>
+            <div className="connect-form">
+              <input
+                type="text"
+                placeholder="Enter friend's nickname"
+                value={peerNickname}
+                onChange={(e) => setPeerNickname(e.target.value)}
+                className="peer-nickname-input"
+              />
+              <button
+                onClick={handleConnect}
+                disabled={
+                  !peerNickname.trim() || connectionStatus === "connecting"
+                }
+                className="connect-btn"
+              >
+                {connectionStatus === "connecting"
+                  ? "Connecting..."
+                  : "Connect"}
+              </button>
+            </div>
           </div>
         ) : (
           <div className="connected-info">
-            <span>Connected to: {remoteId}</span>
+            <span>
+              Connected to: <strong>{remoteNickname || remoteId}</strong>
+            </span>
             <button onClick={onDisconnect} className="disconnect-btn">
               Disconnect
             </button>
