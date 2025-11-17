@@ -42,6 +42,45 @@ function App() {
     staticId: userNickname,
   });
 
+  // In your App.js, add connection debugging
+  const ConnectionDebug = ({
+    connectionStatus,
+    localId,
+    remoteId,
+    isConnected,
+  }) => {
+    if (process.env.NODE_ENV === "development") return null;
+
+    return (
+      <div
+        style={{
+          position: "fixed",
+          top: "10px",
+          right: "10px",
+          background: "rgba(0,0,0,0.8)",
+          color: "white",
+          padding: "10px",
+          borderRadius: "5px",
+          fontSize: "12px",
+          zIndex: 1000,
+        }}
+      >
+        <div>Status: {connectionStatus}</div>
+        <div>Your ID: {localId}</div>
+        <div>Remote ID: {remoteId}</div>
+        <div>Connected: {isConnected ? "Yes" : "No"}</div>
+      </div>
+    );
+  };
+
+  // Then add this component to your App return:
+  <ConnectionDebug
+    connectionStatus={connectionStatus}
+    localId={localId}
+    remoteId={remoteId}
+    isConnected={isConnected}
+  />;
+
   // Load nickname from localStorage
   useEffect(() => {
     const savedNickname = localStorage.getItem("musicShareNickname");
